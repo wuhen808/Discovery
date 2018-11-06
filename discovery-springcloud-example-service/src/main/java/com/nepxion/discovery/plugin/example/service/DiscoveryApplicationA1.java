@@ -13,6 +13,7 @@ import java.util.Collections;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.alibaba.sentinel.annotation.SentinelProtect;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -23,6 +24,8 @@ import com.nepxion.discovery.plugin.example.service.impl.MyDiscoveryEnabledStrat
 import com.nepxion.discovery.plugin.example.service.impl.MyDiscoveryListener;
 import com.nepxion.discovery.plugin.example.service.impl.MyLoadBalanceListener;
 import com.nepxion.discovery.plugin.example.service.impl.MyRegisterListener;
+import com.nepxion.discovery.plugin.example.service.impl.MySentinelExceptionHandler;
+import com.nepxion.discovery.plugin.example.service.impl.MySentinelFlowRuleParser;
 import com.nepxion.discovery.plugin.example.service.impl.MySubscriber;
 import com.nepxion.discovery.plugin.strategy.service.aop.RestTemplateStrategyInterceptor;
 
@@ -36,13 +39,22 @@ public class DiscoveryApplicationA1 {
         new SpringApplicationBuilder(DiscoveryApplicationA1.class).run(args);
     }
 
+    // @SentinelDataSource("spring.cloud.sentinel.datasource") 
+    // protected ReadableDataSource dataSource;
+
     @Bean
     @LoadBalanced
+    @SentinelProtect(blockHandler = "handleException", blockHandlerClass = MySentinelExceptionHandler.class)
     public RestTemplate restTemplate(RestTemplateStrategyInterceptor restTemplateStrategyInterceptor) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setInterceptors(Collections.singletonList(restTemplateStrategyInterceptor));
 
         return restTemplate;
+    }
+
+    @Bean
+    public MySentinelFlowRuleParser mySentinelFlowRuleParser() {
+        return new MySentinelFlowRuleParser();
     }
 
     @Bean
