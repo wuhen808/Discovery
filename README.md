@@ -6,7 +6,7 @@
 [![Build Status](https://travis-ci.org/Nepxion/Discovery.svg?branch=master)](https://travis-ci.org/Nepxion/Discovery)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8e39a24e1be740c58b83fb81763ba317)](https://www.codacy.com/project/HaojunRen/Discovery/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Nepxion/Discovery&amp;utm_campaign=Badge_Grade_Dashboard)
 
-Nepxion Discovery是一款对Spring Cloud Discovery服务注册发现、Ribbon负载均衡、Feign和RestTemplate调用、Hystrix或者阿里巴巴Sentinel熔断隔离限流降级的增强中间件，其功能包括灰度发布（包括切换发布和平滑发布）、服务隔离、服务路由、服务权重、黑/白名单的IP地址过滤、限制注册、限制发现等，支持Eureka、Consul、Zookeeper和阿里巴巴的Nacos为服务注册发现中间件，支持阿里巴巴的Nacos、携程的Apollo和Redis为远程配置中心，支持Spring Cloud Gateway（Finchley版）、Zuul网关和微服务的灰度发布，支持多数据源的数据库灰度发布等客户特色化灰度发布，支持用户自定义和编程灰度路由策略（包括RPC和REST两种调用方式），兼容Spring Cloud Edgware版和Finchley版（不支持Dalston版，因为它的生命周期将在2018年12月结束，如果您无法回避使用Dalston版，请自行修改源码或者联系我）。现有的Spring Cloud微服务很方便引入该中间件，代码零侵入
+Nepxion Discovery是一款对Spring Cloud Discovery服务注册发现、Ribbon负载均衡、Feign和RestTemplate调用、Hystrix或者阿里巴巴Sentinel熔断隔离限流降级的增强中间件，其功能包括灰度发布（包括切换发布和平滑发布）、服务隔离、服务路由、服务权重、黑/白名单的IP地址过滤、限制注册、限制发现等，支持Eureka、Consul、Zookeeper和阿里巴巴的Nacos为服务注册发现中间件，支持阿里巴巴的Nacos、携程的Apollo和Redis为远程配置中心，支持Spring Cloud Gateway（Finchley版）、Zuul网关和微服务的灰度发布，支持多数据源的数据库灰度发布等客户特色化灰度发布，支持用户自定义和编程灰度路由策略（包括RPC和REST两种调用方式），支持运维调度灰度发布和路由的元数据，兼容Spring Cloud Edgware版和Finchley版。现有的Spring Cloud微服务很方便引入该中间件，代码零侵入
 
 :exclamation:临时提醒，由于Spring Cloud Nacos 0.2版本和Nepxion Discovery有点不兼容，故先请[从https://github.com/spring-cloud-incubator/spring-cloud-alibaba](https://github.com/spring-cloud-incubator/spring-cloud-alibaba)下载代码（我在那里PULL了一些代码），然后导入到IDE，代码就不会抛错了。当0.2.1正式发布后，就不需要这么麻烦了
 
@@ -64,6 +64,7 @@ Nepxion Discovery是一款对Spring Cloud Discovery服务注册发现、Ribbon�
 - [规则和策略](#规则和策略)
   - [规则和策略的区别](#规则和策略的区别)
   - [规则和策略的关系](#规则和策略的关系)
+- [外部元数据](#外部元数据)
 - [配置文件](#配置文件)
 - [监听扩展](#监听扩展) 
 - [配置中心](#配置中心)
@@ -94,6 +95,8 @@ Nepxion Discovery是一款对Spring Cloud Discovery服务注册发现、Ribbon�
 ![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Console1.jpg)
 ![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Console2.jpg)
 ![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Console.gif)
+图形化灰度发布Web平台
+![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Console14.jpg)
 集成规则配置的Apollo配置中心
 ![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Apollo.jpg)
 集成规则配置的Nacos配置中心
@@ -281,7 +284,7 @@ Spring Boot Admin监控平台
 ### 版本
 | Spring Cloud版本 | Nepxion Discovery版本 |
 | --- | --- |
-| Finchley | 当前版本 4.8.0-RC1 稳定版本 4.7.12 |
+| Finchley | 当前版本 4.8.0-RC2 稳定版本 4.7.12 |
 | Edgware | 当前版本 3.8.0-RC1 稳定版本 3.7.12 |
 
 ### 依赖
@@ -623,6 +626,13 @@ XML示例（Json示例见discovery-springcloud-example-service下的rule.json）
   - 规则关闭，spring.application.register.control.enabled=false和spring.application.discovery.control.enabled=false
   - 策略关闭，spring.application.strategy.control.enabled=false
 
+## 外部元数据
+外部系统（例如运维发布平台）在远程启动制定微服务的时候，可以通过参数传递来动态改变元数据或者增加运维特色的参数，最后注册到远程配置中心。有两种方式，如下图：
+![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Metadata.jpg)
+- 通过Program arguments来传递，它的用法是前面加“--”。支持Eureka、Zookeeper和Nacos（增量覆盖），Consul支持的不好（全量覆盖）
+- 通过VM arguments来传递，它的用法是前面加“-D”。支持上述所有的注册组件，它的限制是变量前面必须要加“ext.”
+- 两种方式尽量避免同时用
+
 ## 配置文件
 - 基础属性配置
 不同的服务注册发现组件对应的不同的配置值（region配置可选），请仔细阅读
@@ -716,6 +726,8 @@ spring.application.strategy.request.headers=version;region;token
 参考Swagger界面，如下图
 
 ![Alt text](https://github.com/Nepxion/Docs/blob/master/discovery-doc/Swagger1.jpg)
+
+:exclamation:Swagger默认不支持多个Swagger包路径下的实现，如果业务系统有自己的Swagger功能，那么只需要在配置文件里面加上swagger.service.base.package={路径1},{路径2},{路径3}
 
 ## 控制平台
 为UI提供相关接口，包括
